@@ -1,18 +1,30 @@
 from sentence_transformers import SentenceTransformer
 import numpy as np
-from app.core.config import settings
+from typing import Union, List
+import asyncio
+import logging
 
+_model = SentenceTransformer("all-MiniLM-L6-v2", device="cpu")
 class EmbeddingService:
-    _model: SentenceTransformer | None = None
+    def __init__(
+        self,
+        device: str = "cpu"
+    ):
+        self.device = device   
+        self.logger = logging.getLogger(__name__)     
 
-    @classmethod
-    def _get_model(cls) -> SentenceTransformer:
-        if cls._model is None:
-            cls._model = SentenceTransformer(settings.embedding_model_name, device=settings.embedding_device)
-        return cls._model
+    async def embed(self, *, model: str, inputs: Union[List[str], str]) -> List[List[float]]:
+        try:
+            vectors = await asyncio.to_thread(
+                _model.encode,
+                inputs,
+                convert_to_numpy=True,
+                show_progress_bar=False
+            )
+            self.logger.debug(f"vectors {vectors}")
+            return vectors.tolist()
+        except Exception as e:
+            self.logger.error(f"Error during embedding: {e}")
+            return None
 
-    @classmethod
-    def embed(cls, texts: list[str]) -> list[list[float]]:
-        model = cls._get_model()
-        vectors = model.encode(texts, normalize_embeddings=True, convert_to_numpy=True)
-        return vectors.astype(np.float32).tolist()
+        
