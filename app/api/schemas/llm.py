@@ -65,7 +65,26 @@ class LLMResponse(BaseModel):
             }
         ]
     )
-    usage: Optional[Dict[str, int]] = Field(
+    usage: Optional[Dict[str, Any]] = Field(
         None,
         example={"prompt_tokens": 10, "completion_tokens": 20, "total_tokens": 30}
+    )
+
+class LLMStreamResponse(BaseModel):
+    id: str = Field(..., example="chatcmpl-123")
+    object: str = Field(..., example="chat.completion.chunk")
+    created: int = Field(..., example=1677652288)
+    model: str = Field(..., example="gpt-4o")
+    choices: List[Dict[str, Any]] = Field(
+        ...,
+        example=[
+            {
+                "index": 0,
+                "delta": {
+                    "role": "assistant",
+                    "content": "Hello! How can I assist you today?"
+                },
+                "finish_reason": None
+            }
+        ]
     )

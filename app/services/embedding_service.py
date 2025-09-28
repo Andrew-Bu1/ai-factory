@@ -21,10 +21,9 @@ class EmbeddingService:
                 convert_to_numpy=True,
                 show_progress_bar=False
             )
-            self.logger.debug(f"vectors {vectors}")
             return vectors.tolist()
         except Exception as e:
             self.logger.error(f"Error during embedding: {e}")
-            return None
+            raise e
 
         
