@@ -1,4 +1,3 @@
-from .base import Base
+from .ai_model import AIModel
 
-
-__all__ = ["Base"]
+__all__ = ["AIModel"]
