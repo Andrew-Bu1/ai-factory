@@ -10,6 +10,9 @@ class Settings(BaseSettings):
     openrouter_base_url: str = Field(
         default="https://openrouter.ai/api/v1", alias="OPENROUTER_BASE_URL"
     )
+    database_url: str = Field(
+        default="postgresql+psycopg2://postgres:postgres@localhost:5431/ai_factory", alias="DATABASE_URL"
+    )
 
     class Config:
         env_file: str = ".env"
