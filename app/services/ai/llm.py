@@ -1,8 +1,8 @@
 import httpx
-import asyncio
+import time
 from typing import Any, AsyncGenerator
 from .base import BaseModel
-
+import logging
 
 class LLMModel(BaseModel):
     """AI model for text generation using OpenRouter API."""
@@ -31,21 +31,24 @@ class LLMModel(BaseModel):
                 "Content-Type": "application/json"
             }
         )
+        self._logger = logging.getLogger(__name__)
 
-    async def infer(
+    def infer(
         self, 
         payload: dict[str, Any],
-    ) -> str | dict[str, Any]:
+    ):
         """Generate text completion using OpenRouter.
     
         Returns:
-            Generated text or full response dict if stream=False
+            AsyncGenerator for streaming or Coroutine for non-streaming
         """        
         stream = payload.get("stream", False)
         if stream:
-            return await self._stream_completion(payload)
+            # Return the async generator for streaming
+            return self._stream_completion(payload)
         else:
-            return await self._complete(payload)
+            # Return the coroutine for non-streaming
+            return self._complete(payload)
     
     async def _complete(self, payload: dict[str, Any]) -> dict[str, Any]:
         """Make a non-streaming completion request.
@@ -56,9 +59,26 @@ class LLMModel(BaseModel):
         Returns:
             Full response from OpenRouter
         """
-        response = await self._client.post("/chat/completions", json=payload)
-        response.raise_for_status()
-        return response.json()
+        start = time.time()
+
+        try:
+            response = await self._client.post("chat/completions", json=payload)
+
+            self._logger.info(f"[LLM] HTTP {response.status_code} in {time.time() - start:.2f}s")
+
+            response.raise_for_status()
+
+            data = response.json()
+            return data
+
+        except httpx.HTTPError as e:
+            self._logger.error(f"[LLM] HTTP error: {e} | Response text: {e.response.text if e.response else 'no response'}")
+            raise
+
+        except Exception as e:
+            self._logger.error(f"[LLM] Unexpected error: {e}")
+            raise
+
     
     async def _stream_completion(self, payload: dict[str, Any]) -> AsyncGenerator[str, None]:
         """Make a streaming completion request.
@@ -69,37 +89,16 @@ class LLMModel(BaseModel):
         Yields:
             Text chunks as they arrive
         """
+        start = time.time()
         async with self._client.stream("POST", "/chat/completions", json=payload) as response:
             response.raise_for_status()
             async for line in response.aiter_lines():
-                if line.startswith("data: "):
-                    data = line[6:]  # Remove "data: " prefix
-                    if data.strip() == "[DONE]":
-                        break
-                    try:
-                        import json
-                        chunk = json.loads(data)
-                        if "choices" in chunk and len(chunk["choices"]) > 0:
-                            delta = chunk["choices"][0].get("delta", {})
-                            if "content" in delta:
-                                yield delta["content"]
-                    except json.JSONDecodeError:
-                        continue
-    
-    def get_model_info(self) -> dict[str, Any]:
-        """Get information about the LLM service.
-        
-        Returns:
-            Dictionary containing service metadata
-        """
-        return {
-            "type": "llm",
-            "provider": "openrouter",
-            "base_url": self.base_url,
-            "timeout": self.timeout,
-            "has_api_key": bool(self.api_key)
-        }
-    
+                yield line
+
+        self._logger.info(f"[LLM] Stream ended in {time.time() - start:.2f}s")
+
+
+
     async def close(self):
         """Close the HTTP client."""
         await self._client.aclose()

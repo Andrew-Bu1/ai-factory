@@ -38,13 +38,15 @@ async def chat(
 ) -> Union[LLMResponse, StreamingResponse]:
     
     try:
+        payload_dict = payload.model_dump(exclude_none=True)
+
         if payload.stream:
             return StreamingResponse(
-                llm_model._stream_completion(payload), 
+                llm_model.infer(payload_dict),
                 media_type="text/event-stream"
             )
-        else:
-            return await llm_model._complete(payload)
+        
+        return await llm_model.infer(payload_dict)
     except Exception as e:
         raise APIError(detail=str(e))
 
