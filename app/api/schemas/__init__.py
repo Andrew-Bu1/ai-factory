@@ -1,3 +1,3 @@
-from .ai_model import AIModelCreate, AIModelUpdate, AIModelResponse, AIModelListResponse
+from .model import ModelCreate, ModelUpdate, ModelResponse, ModelListResponse
 
-__all__ = ["AIModelCreate", "AIModelUpdate", "AIModelResponse", "AIModelListResponse"]
+__all__ = ["ModelCreate", "ModelUpdate", "ModelResponse", "ModelListResponse"]

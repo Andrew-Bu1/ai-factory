@@ -7,8 +7,7 @@ from ..schemas.llm import (
 from app.api.errors import (
     APIError
 )
-from app.services.chat_service import ChatService
-from app.api.deps import get_chat_service
+from app.api.deps import get_llm_model, LLMModel
 from typing import Union
 
 router = APIRouter(tags=["Chat"])
@@ -35,17 +34,17 @@ router = APIRouter(tags=["Chat"])
     })
 async def chat(
     payload: LLMRequest, 
-    chat_service: ChatService = Depends(get_chat_service)
+    llm_model: LLMModel = Depends(get_llm_model)
 ) -> Union[LLMResponse, StreamingResponse]:
     
     try:
         if payload.stream:
             return StreamingResponse(
-                chat_service.stream_chat(payload), 
+                llm_model._stream_completion(payload), 
                 media_type="text/event-stream"
             )
         else:
-            return await chat_service.chat(payload)
+            return await llm_model._complete(payload)
     except Exception as e:
         raise APIError(detail=str(e))
 

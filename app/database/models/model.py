@@ -1,13 +1,11 @@
 from sqlalchemy import Column, Integer, String, Text, DateTime, Boolean, Float
-from sqlalchemy.sql import func
-from app.database.base import Base
+from .base import BaseModel, TimestampMixin, IDMixin
 
 
-class AIModel(Base):
-    __tablename__ = "ai_models"
+class Model(BaseModel, TimestampMixin, IDMixin):
+    __tablename__ = "models"
 
-    id = Column(Integer, primary_key=True, index=True)
-    name = Column(String(255), nullable=False, index=True)
+    name = Column(String(255), nullable=False)
     provider = Column(String(100), nullable=False)  # e.g., "openai", "anthropic", "cohere"
     model_id = Column(String(255), nullable=False)  # e.g., "gpt-4", "claude-3", etc.
     model_type = Column(String(50), nullable=False)  # e.g., "chat", "completion", "embedding"
@@ -18,11 +16,10 @@ class AIModel(Base):
     input_cost_per_token = Column(Float, nullable=True)  # Cost per input token
     output_cost_per_token = Column(Float, nullable=True)  # Cost per output token
     context_window = Column(Integer, nullable=True)  # Context window size
+    dimension = Column(Integer, nullable=True)  # For embedding models
    
     # Metadata
     is_active = Column(Boolean, default=True)
-    created_at = Column(DateTime(timezone=True), server_default=func.now())
-    updated_at = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now())
 
     def __repr__(self):
         return f"<AIModel(id={self.id}, name='{self.name}', provider='{self.provider}', model_id='{self.model_id}')>"

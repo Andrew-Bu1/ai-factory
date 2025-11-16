@@ -2,30 +2,30 @@ from typing import Optional, List
 from sqlalchemy.orm import Session
 from sqlalchemy import and_
 
-from app.database.models.ai_model import AIModel
-from app.api.schemas.ai_model import AIModelCreate, AIModelUpdate
+from app.database.models.model import Model
+from app.api.schemas.model import ModelCreate, ModelUpdate
 
 
-class AIModelRepository:
+class ModelRepository:
     def __init__(self, db: Session):
         self.db = db
 
-    def create(self, ai_model: AIModelCreate) -> AIModel:
+    def create(self, model: ModelCreate) -> Model:
         """Create a new AI model"""
-        db_ai_model = AIModel(**ai_model.model_dump())
-        self.db.add(db_ai_model)
+        db_model = Model(**model.model_dump())
+        self.db.add(db_model)
         self.db.commit()
-        self.db.refresh(db_ai_model)
-        return db_ai_model
-
-    def get_by_id(self, model_id: int) -> Optional[AIModel]:
+        self.db.refresh(db_model)
+        return db_model
+    
+    def get_by_id(self, id: int) -> Optional[Model]:
         """Get AI model by ID"""
-        return self.db.query(AIModel).filter(AIModel.id == model_id).first()
+        return self.db.query(Model).filter(Model.id == id).first()
 
-    def get_by_model_id(self, model_id: str, provider: str) -> Optional[AIModel]:
+    def get_by_model_id(self, model_id: str, provider: str) -> Optional[Model]:
         """Get AI model by model_id and provider"""
-        return self.db.query(AIModel).filter(
-            and_(AIModel.model_id == model_id, AIModel.provider == provider)
+        return self.db.query(Model).filter(
+            and_(Model.model_id == model_id, Model.provider == provider)
         ).first()
 
     def get_all(
@@ -35,16 +35,17 @@ class AIModelRepository:
         provider: Optional[str] = None,
         model_type: Optional[str] = None,
         is_active: Optional[bool] = None
-    ) -> List[AIModel]:
+    ) -> List[Model]:
         """Get all AI models with optional filtering"""
-        query = self.db.query(AIModel)
+        query = self.db.query(Model)
         
         if provider:
-            query = query.filter(AIModel.provider == provider)
+            query = query.filter(Model.provider == provider)
         if model_type:
-            query = query.filter(AIModel.model_type == model_type)
+            query = query.filter(Model.model_type == model_type)
+        
         if is_active is not None:
-            query = query.filter(AIModel.is_active == is_active)
+            query = query.filter(Model.is_active == is_active)
             
         return query.offset(skip).limit(limit).all()
 
@@ -55,18 +56,18 @@ class AIModelRepository:
         is_active: Optional[bool] = None
     ) -> int:
         """Count AI models with optional filtering"""
-        query = self.db.query(AIModel)
+        query = self.db.query(Model)
         
         if provider:
-            query = query.filter(AIModel.provider == provider)
+            query = query.filter(Model.provider == provider)
         if model_type:
-            query = query.filter(AIModel.model_type == model_type)
+            query = query.filter(Model.model_type == model_type)
         if is_active is not None:
-            query = query.filter(AIModel.is_active == is_active)
+            query = query.filter(Model.is_active == is_active)
             
         return query.count()
 
-    def update(self, model_id: int, ai_model_update: AIModelUpdate) -> Optional[AIModel]:
+    def update(self, model_id: int, ai_model_update: ModelUpdate) -> Optional[Model]:
         """Update an AI model"""
         db_ai_model = self.get_by_id(model_id)
         if db_ai_model:
@@ -86,6 +87,6 @@ class AIModelRepository:
             return True
         return False
 
-    def soft_delete(self, model_id: int) -> Optional[AIModel]:
+    def soft_delete(self, model_id: int) -> Optional[Model]:
         """Soft delete an AI model (set is_active to False)"""
-        return self.update(model_id, AIModelUpdate(is_active=False))
+        return self.update(model_id, ModelUpdate(is_active=False))

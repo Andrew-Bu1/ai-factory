@@ -1,6 +1,6 @@
 from .chat import router as chat_router
 from .embed import router as embed_router
-from .ai_models import router as models_router
+from .model import router as models_router
 from fastapi import (
     APIRouter
 )

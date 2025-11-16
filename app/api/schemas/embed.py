@@ -5,10 +5,10 @@ from typing import List
 class EmbeddingRequest(BaseModel):
     model: str = Field(
         ...,
-        example="text-embedding-3-small",
+        example="all-MiniLM-L6-v2",
         description="The model to use for generating embeddings.",
     )
-    input: List[str] | str = Field(
+    inputs: List[str] | str = Field(
         ...,
         example=["Your text string goes here", "Another text string"],
         description="Input text(s) to generate embeddings for.",

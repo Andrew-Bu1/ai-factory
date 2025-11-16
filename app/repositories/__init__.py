@@ -1,3 +1,3 @@
-from .ai_model_repository import AIModelRepository
+from .model import ModelRepository 
 
-__all__ = ["AIModelRepository"]
+__all__ = ["ModelRepository"]

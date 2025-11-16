@@ -3,7 +3,7 @@ from datetime import datetime
 from pydantic import BaseModel, ConfigDict
 
 
-class AIModelBase(BaseModel):
+class ModelBase(BaseModel):
     name: str
     provider: str
     model_id: str
@@ -13,14 +13,15 @@ class AIModelBase(BaseModel):
     input_cost_per_token: Optional[float] = None
     output_cost_per_token: Optional[float] = None
     context_window: Optional[int] = None
+    dimension: Optional[int] = None
     is_active: bool = True
 
 
-class AIModelCreate(AIModelBase):
+class ModelCreate(ModelBase):
     pass
 
 
-class AIModelUpdate(BaseModel):
+class ModelUpdate(BaseModel):
     name: Optional[str] = None
     provider: Optional[str] = None
     model_id: Optional[str] = None
@@ -30,10 +31,11 @@ class AIModelUpdate(BaseModel):
     input_cost_per_token: Optional[float] = None
     output_cost_per_token: Optional[float] = None
     context_window: Optional[int] = None
+    dimension: Optional[int] = None
     is_active: Optional[bool] = None
 
 
-class AIModelResponse(AIModelBase):
+class ModelResponse(ModelBase):
     model_config = ConfigDict(from_attributes=True)
     
     id: int
@@ -41,8 +43,8 @@ class AIModelResponse(AIModelBase):
     updated_at: datetime
 
 
-class AIModelListResponse(BaseModel):
-    items: list[AIModelResponse]
+class ModelListResponse(BaseModel):
+    items: list[ModelResponse]
     total: int
     page: int
     size: int

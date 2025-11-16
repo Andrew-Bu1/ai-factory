@@ -1,7 +1,6 @@
 from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker, declarative_base
+from sqlalchemy.orm import sessionmaker
 
-Base = declarative_base()
 
 # Use the sync driver (psycopg)
 DATABASE_URL = "postgresql+psycopg2://postgres:postgres@localhost:5431/ai_factory"
